@@ -30,13 +30,15 @@ end
 
 # View a single list
 get "/lists/:id" do
-  @current_list = session[:lists][params[:id].to_i]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   erb :list
 end
 
 # Render the edit list form
 get "/lists/:id/edit" do
-  @current_list = session[:lists][params[:id].to_i]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   erb :edit_list
 end
 
@@ -57,7 +59,8 @@ end
 
 # Edit a list
 post "/lists/:id" do
-  @current_list = session[:lists][params[:id].to_i]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   new_name = params[:list_name].strip
   error = error_for_list_name(new_name)
 
@@ -80,8 +83,8 @@ end
 
 # Add a todo to a list
 post "/lists/:id/todos" do
-  id = params[:id].to_i
-  @current_list = session[:lists][id]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   todo_name = params[:todo].strip
   error = error_for_todo_name(todo_name)
 
@@ -91,7 +94,7 @@ post "/lists/:id/todos" do
   else
     @current_list[:todos] << { name: todo_name, completed: false }
     session[:success] = "The todo was added."
-    redirect "lists/#{id}"
+    redirect "lists/#{@list_id}"
   end
 end
 
@@ -105,7 +108,8 @@ end
 # Mark a todo as complete/incomplete
 post "/lists/:id/todos/:todo_id" do
   is_completed = params[:completed] == "true"
-  @current_list = session[:lists][params[:id].to_i]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   @current_todo = @current_list[:todos][params[:todo_id].to_i]
   @current_todo[:completed] = is_completed
 
@@ -115,7 +119,8 @@ end
 
 # Complete all todos in a list
 post "/lists/:id/complete_all" do
-  @current_list = session[:lists][params[:id].to_i]
+  @list_id = params[:id].to_i
+  @current_list = load_list(@list_id)
   @current_list[:todos].each do |todo|
     todo[:completed] = true
   end
@@ -140,6 +145,15 @@ def error_for_todo_name(name)
   elsif @current_list[:todos].any? { |todo| todo[:name] == name }
     "That todo already exists."
   end
+end
+
+# Validates list id
+def load_list(index)
+  list = session[:lists][index] if index && session[:lists][index]
+  return list if list
+
+  session[:error] = "The specified list was not found."
+  redirect "/lists"
 end
 
 helpers do
