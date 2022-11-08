@@ -4,32 +4,32 @@
     <ul>
       <% if @current_list[:todos].any? { |todo| todo[:completed] == false } %>
         <li>
-          <form action="/lists/<%= params[:id] %>/complete_all" method="post">
+          <form action="/lists/<%= @current_list[:id] %>/complete_all" method="post">
             <button class="check" type="submit">Complete All</button>
           </form>
         </li>
       <% end %>
       <li>
-        <a class="edit" href="/lists/<%= params[:id] %>/edit">Edit List</a>
+        <a class="edit" href="/lists/<%= @current_list[:id] %>/edit">Edit List</a>
       </li>
     </ul>
   </header>
   <ul>
-    <% todos_in_order(@current_list[:todos]) do |todo, index| %>
+    <% todos_in_order(@current_list[:todos]) do |todo| %>
       <% if todo[:completed] %>
         <li class="complete">
       <% else %>
         <li>
       <% end %>
 
-        <form action="/lists/<%= params[:id] %>/todos/<%= index %>"
+        <form action="/lists/<%= @current_list[:id] %>/todos/<%= todo[:id] %>"
         method="post" class="check">
           <input type="hidden" name="completed" value=<%= !todo[:completed] %> >
           <button type="submit">Complete</button>
         </form>
 
         <h3><%= todo[:name] %></h3>
-        <form action="/lists/<%= params[:id] %>/todos/<%= index %>/destroy"
+        <form action="/lists/<%= @current_list[:id] %>/todos/<%= todo[:id] %>/destroy"
         method="post" class="delete">
           <button type="submit">Delete</button>
         </form>
@@ -38,7 +38,7 @@
   </ul>
 </section>
 
-<form action="/lists/<%= params[:id] %>/todos" method="post">
+<form action="/lists/<%= @current_list[:id] %>/todos" method="post">
   <dl>
     <dt>
       <label for="todo">Enter a new todo item:</label>
